@@ -39,6 +39,16 @@ app.use(
 );
 app.use(express.json());
 
+// Debug endpoint to check environment variables
+app.get("/debug/env", (req, res) => {
+  res.json({
+    NODE_ENV: process.env.NODE_ENV,
+    NODE_SERVER_DOMAIN: process.env.NODE_SERVER_DOMAIN,
+    SESSION_SECRET: process.env.SESSION_SECRET ? "SET" : "NOT SET",
+    NETLIFY_URL: process.env.NETLIFY_URL
+  });
+});
+
 Lab5(app);
 Hello(app);
 UserRoutes(app);
