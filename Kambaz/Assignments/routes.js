@@ -10,7 +10,18 @@ export default function AssignmentRoutes(app) {
   app.post("/api/assignments", async (req, res) => {
     const { title, course, description, points, due, available, until } = req.body;
 
-    const status = await assignmentsDao.addAssignment({ title, course, description, points, due, available, until })
+    // Map 'available' field to 'not_available_until' for database storage
+    const assignmentData = { 
+      title, 
+      course, 
+      description, 
+      points, 
+      due, 
+      not_available_until: available, 
+      until 
+    };
+
+    const status = await assignmentsDao.addAssignment(assignmentData)
     res.send(status)
   })
 
@@ -24,7 +35,18 @@ export default function AssignmentRoutes(app) {
     const { assignmentId } = req.params;
     const { title, course, description, points, due, available, until } = req.body;
 
-    const status = await assignmentsDao.updateAssignment(assignmentId, { title, course, description, points, due, available, until })
+    // Map 'available' field to 'not_available_until' for database storage
+    const assignmentUpdates = { 
+      title, 
+      course, 
+      description, 
+      points, 
+      due, 
+      not_available_until: available, 
+      until 
+    };
+
+    const status = await assignmentsDao.updateAssignment(assignmentId, assignmentUpdates)
     res.send(status)
   })
 

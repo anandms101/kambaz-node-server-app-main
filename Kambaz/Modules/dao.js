@@ -28,6 +28,11 @@ export function deleteModule(moduleId) {
 export function updateModule(moduleId, moduleUpdates) {
   const { modules } = Database;
   const module = modules.find((module) => module._id === moduleId);
+  
+  if (!module) {
+    throw new Error(`Module with ID ${moduleId} not found`);
+  }
+  
   Object.assign(module, moduleUpdates);
   return module;
 }

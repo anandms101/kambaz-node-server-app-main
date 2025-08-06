@@ -42,7 +42,13 @@ export default function ModuleRoutes(app) {
   app.put("/api/modules/:moduleId", async (req, res) => {
     const { moduleId } = req.params;
     const moduleUpdates = req.body;
-    const status = await modulesDao.updateModule(moduleId, moduleUpdates);
-    res.send(status);
+    
+    try {
+      const updatedModule = modulesDao.updateModule(moduleId, moduleUpdates);
+      res.json(updatedModule);
+    } catch (error) {
+      console.error("Error updating module:", error.message);
+      res.status(404).json({ message: error.message });
+    }
   });
 }
