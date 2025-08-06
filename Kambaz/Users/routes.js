@@ -50,7 +50,11 @@ export default function UserRoutes(app) {
     }
     const currentUser = dao.createUser(req.body);
     req.session["currentUser"] = currentUser;
-    res.json(currentUser);
+    
+    // Add a small delay to ensure session is saved
+    setTimeout(() => {
+      res.json(currentUser);
+    }, 100);
   };
 
   const signin = (req, res) => {
@@ -59,7 +63,11 @@ export default function UserRoutes(app) {
     if (currentUser) {
       // Store user in session - this creates a new session for this browser
       req.session["currentUser"] = currentUser;
-      res.json(currentUser);
+      
+      // Add a small delay to ensure session is saved
+      setTimeout(() => {
+        res.json(currentUser);
+      }, 100);
     } else {
       res.status(401).json({ message: "Unable to login. Try again later." });
     }

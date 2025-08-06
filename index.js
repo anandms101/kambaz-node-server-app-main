@@ -15,10 +15,13 @@ const app = express();
 
 const sessionOptions = {
   secret: process.env.SESSION_SECRET || "kambaz",
-  resave: false,
+  resave: true,
   saveUninitialized: false,
+  rolling: true,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== "development",
   }
 };
 
