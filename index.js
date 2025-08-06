@@ -12,19 +12,26 @@ import EnrollmentsRoutes from "./Kambaz/Enrollments/routes.js";
 import AssignmentsRoutes from "./Kambaz/Assignments/routes.js";
 
 const app = express();
+
 const sessionOptions = {
   secret: process.env.SESSION_SECRET || "kambaz",
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  }
 };
+
 if (process.env.NODE_ENV !== "development") {
   sessionOptions.proxy = true;
   sessionOptions.cookie = {
+    ...sessionOptions.cookie,
     sameSite: "none",
     secure: true,
     domain: process.env.NODE_SERVER_DOMAIN,
   };
 }
+
 app.use(session(sessionOptions));
 app.use(
   cors({
@@ -46,6 +53,29 @@ app.get("/debug/env", (req, res) => {
     NODE_SERVER_DOMAIN: process.env.NODE_SERVER_DOMAIN,
     SESSION_SECRET: process.env.SESSION_SECRET ? "SET" : "NOT SET",
     NETLIFY_URL: process.env.NETLIFY_URL
+  });
+});
+
+// Debug endpoint to check active sessions
+app.get("/debug/sessions", (req, res) => {
+  const store = req.sessionStore;
+  store.all((err, sessions) => {
+    if (err) {
+      res.status(500).json({ error: "Failed to get sessions" });
+      return;
+    }
+    
+    const sessionInfo = Object.entries(sessions).map(([sessionId, session]) => ({
+      sessionId: sessionId.substring(0, 8) + "...",
+      userId: session.currentUser?._id,
+      username: session.currentUser?.username,
+      createdAt: session.cookie?.originalMaxAge
+    }));
+    
+    res.json({
+      totalSessions: Object.keys(sessions).length,
+      sessions: sessionInfo
+    });
   });
 });
 

@@ -57,9 +57,9 @@ export default function UserRoutes(app) {
     const { username, password } = req.body;
     const currentUser = dao.findUserByCredentials(username, password);
     if (currentUser) {
+      // Store user in session - this creates a new session for this browser
       req.session["currentUser"] = currentUser;
       res.json(currentUser);
-      // res.status(200).json(currentUser);
     } else {
       res.status(401).json({ message: "Unable to login. Try again later." });
     }
