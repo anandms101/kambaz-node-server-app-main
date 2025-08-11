@@ -52,6 +52,10 @@ const allowedOrigins = [
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5174",
   "http://127.0.0.1:5175",
+  // Add your specific Netlify URL
+  "https://a6--anand-kambaz.netlify.app",
+  // Allow all Netlify preview URLs
+  /^https:\/\/.*--anand-kambaz\.netlify\.app$/,
 ].filter(Boolean);
 
 app.use(
@@ -59,10 +63,28 @@ app.use(
     credentials: true,
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
+      
+      // Allow localhost for development
       const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
-      if (allowedOrigins.includes(origin) || isLocalhost) {
+      if (isLocalhost) {
         return callback(null, true);
       }
+      
+      // Check against allowed origins
+      for (const allowedOrigin of allowedOrigins) {
+        if (typeof allowedOrigin === 'string' && allowedOrigin === origin) {
+          return callback(null, true);
+        }
+        if (allowedOrigin instanceof RegExp && allowedOrigin.test(origin)) {
+          return callback(null, true);
+        }
+      }
+      
+      // For production, allow all Netlify domains
+      if (process.env.NODE_ENV === 'production' && origin.includes('netlify.app')) {
+        return callback(null, true);
+      }
+      
       return callback(new Error("Not allowed by CORS"));
     },
   })
