@@ -3,8 +3,8 @@ import * as assignmentsDao from "./dao.js";
 export default function AssignmentRoutes(app) {
   app.get("/api/assignments/:courseId", async (req, res) => {
     const { courseId } = req.params;
-    const response = await assignmentsDao.findAssignmentsForCourse(courseId);
-    res.send(response);
+    const assignments = await assignmentsDao.findAssignmentsForCourse(courseId);
+    res.json(assignments);
   });
 
   app.post("/api/assignments", async (req, res) => {
@@ -21,14 +21,14 @@ export default function AssignmentRoutes(app) {
       until 
     };
 
-    const status = await assignmentsDao.addAssignment(assignmentData)
-    res.send(status)
+    const assignment = await assignmentsDao.addAssignment(assignmentData)
+    res.json(assignment)
   })
 
   app.delete("/api/assignments/:assignmentId", async (req, res) => {
     const { assignmentId } = req.params;
-    const status = assignmentsDao.deleteAssignment(assignmentId)
-    res.send(status)
+    const status = await assignmentsDao.deleteAssignment(assignmentId)
+    res.json(status)
   })
 
   app.put("/api/assignments/:assignmentId", async (req, res) => {
@@ -46,8 +46,8 @@ export default function AssignmentRoutes(app) {
       until 
     };
 
-    const status = await assignmentsDao.updateAssignment(assignmentId, assignmentUpdates)
-    res.send(status)
+    const updated = await assignmentsDao.updateAssignment(assignmentId, assignmentUpdates)
+    res.json(updated)
   })
 
 }

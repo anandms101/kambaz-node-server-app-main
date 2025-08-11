@@ -36,4 +36,6 @@ export default function EnrollmentsRoutes(app) {
       res.status(500).json({ message: "Error toggling enrollment" });
     }
   });
+
+
 }
