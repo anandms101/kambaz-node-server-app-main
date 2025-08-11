@@ -1,6 +1,7 @@
 import "dotenv/config";
 
 import express from "express";
+import mongoose from "mongoose";
 import Hello from "./Hello.js";
 import Lab5 from "./Lab5/index.js";
 import cors from "cors";
@@ -10,6 +11,11 @@ import CourseRoutes from "./Kambaz/Courses/routes.js";
 import ModuleRoutes from "./Kambaz/Modules/routes.js";
 import EnrollmentsRoutes from "./Kambaz/Enrollments/routes.js";
 import AssignmentsRoutes from "./Kambaz/Assignments/routes.js";
+
+const CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING || "mongodb://127.0.0.1:27017/kambaz";
+mongoose.connect(CONNECTION_STRING)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch(err => console.error("MongoDB connection error:", err));
 
 const app = express();
 
@@ -36,15 +42,29 @@ if (process.env.NODE_ENV !== "development") {
 }
 
 app.use(session(sessionOptions));
+const allowedOrigins = [
+  process.env.NETLIFY_URL,
+  process.env.FRONTEND_URL,
+  process.env.LOCAL_FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+  "http://127.0.0.1:5175",
+].filter(Boolean);
+
 app.use(
   cors({
     credentials: true,
-    origin: [
-      process.env.NETLIFY_URL,
-      "http://localhost:5173",
-      "http://localhost:4001",
-      "https://a5--anand-kambaz.netlify.app/",
-    ].filter(Boolean),
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+      if (allowedOrigins.includes(origin) || isLocalhost) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
   })
 );
 app.use(express.json());
@@ -89,4 +109,5 @@ CourseRoutes(app);
 ModuleRoutes(app);
 EnrollmentsRoutes(app);
 AssignmentsRoutes(app);
-app.listen(process.env.PORT || 4001);
+const PORT = process.env.PORT || 4002;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,37 +1,28 @@
-import Database from "../Database/index.js";
-import { v4 as uuid } from "uuid"
-const { assignments } = Database
+import model from "./model.js";
+import { v4 as uuid } from "uuid";
 
-// Helper function to transform assignment data for frontend
-const transformAssignmentForFrontend = (assignment) => {
-  return {
-    ...assignment,
-    available: assignment.not_available_until || assignment.available
-  };
-};
+const transformAssignmentForFrontend = (assignment) => ({
+  ...assignment,
+  available: assignment.not_available_until || assignment.available,
+});
 
-export function findAssignmentsForCourse(courseId) {
-  const { assignments } = Database;
-  const filteredAssignments = assignments.filter(assignment => assignment.course === courseId);
-  return filteredAssignments.map(transformAssignmentForFrontend);
+export async function findAssignmentsForCourse(courseId) {
+  const docs = await model.find({ course: courseId });
+  return docs.map((doc) => transformAssignmentForFrontend(doc.toObject()));
 }
 
-export function addAssignment(assignmentInfo) {
-  const { assignments } = Database
-
+export async function addAssignment(assignmentInfo) {
   const newAssignment = { ...assignmentInfo, _id: uuid() };
-  Database.assignments = [...assignments, newAssignment];
-  return Database.assignments.map(transformAssignmentForFrontend);
+  const doc = await model.create(newAssignment);
+  return transformAssignmentForFrontend(doc.toObject());
 }
 
-export function updateAssignment(assignmentId, assignmentUpdates) {
-  const { assignments } = Database;
-  const assignment = assignments.find((assignment) => assignment._id === assignmentId);
-  Object.assign(assignment, assignmentUpdates);
-  return transformAssignmentForFrontend(assignment);
+export async function updateAssignment(assignmentId, assignmentUpdates) {
+  await model.updateOne({ _id: assignmentId }, { $set: assignmentUpdates });
+  const updated = await model.findById(assignmentId);
+  return transformAssignmentForFrontend(updated.toObject());
 }
 
-export function deleteAssignment(assignmentId) {
-  Database.assignments = assignments.filter(assignment => assignment._id !== assignmentId)
-  return assignments.map(transformAssignmentForFrontend);
+export async function deleteAssignment(assignmentId) {
+  return model.deleteOne({ _id: assignmentId });
 }
