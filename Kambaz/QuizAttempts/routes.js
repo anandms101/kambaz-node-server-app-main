@@ -93,21 +93,51 @@ export default function QuizAttemptRoutes(app) {
             case 'multiple-choice':
               const correctOption = question.options.find(opt => opt.isCorrect);
               isCorrect = studentAnswer.answer === correctOption?.text;
+              if (isCorrect) {
+                earnedPoints = question.points;
+              }
               break;
             case 'true-false':
               isCorrect = studentAnswer.answer === question.correctAnswer;
+              if (isCorrect) {
+                earnedPoints = question.points;
+              }
               break;
             case 'fill-blank':
-              isCorrect = question.correctAnswers.some(
-                correct => correct.toLowerCase() === studentAnswer.answer.toLowerCase()
-              );
+              // Handle both legacy single-blank and new multi-blank structure
+              if (question.blanks && question.blanks.length > 0) {
+                // New multi-blank structure with partial credit
+                const blankAnswers = studentAnswer.answer || {};
+                let correctBlanks = 0;
+                let totalBlanks = question.blanks.length;
+                
+                for (const blank of question.blanks) {
+                  const studentBlankAnswer = blankAnswers[blank.id] || "";
+                  const isBlankCorrect = blank.answers.some(
+                    correct => correct.toLowerCase() === studentBlankAnswer.toLowerCase()
+                  );
+                  if (isBlankCorrect) {
+                    correctBlanks++;
+                  }
+                }
+                
+                // Calculate partial credit: points per blank * number of correct blanks
+                const pointsPerBlank = question.points / totalBlanks;
+                earnedPoints = Math.round(pointsPerBlank * correctBlanks);
+                isCorrect = correctBlanks === totalBlanks; // Fully correct only if all blanks are right
+              } else {
+                // Legacy single-blank structure
+                isCorrect = question.correctAnswers.some(
+                  correct => correct.toLowerCase() === studentAnswer.answer.toLowerCase()
+                );
+                if (isCorrect) {
+                  earnedPoints = question.points;
+                }
+              }
               break;
           }
 
-          if (isCorrect) {
-            earnedPoints = question.points;
-            totalScore += question.points;
-          }
+          totalScore += earnedPoints;
 
           scoredAnswers.push({
             questionId: question._id,

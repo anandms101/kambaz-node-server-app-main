@@ -17,7 +17,11 @@ const questionSchema = new mongoose.Schema(
       isCorrect: Boolean
     }], // For multiple choice questions
     correctAnswer: mongoose.Schema.Types.Mixed, // For true/false questions (true/false)
-    correctAnswers: [String], // For fill-in-blank questions (array of possible correct answers)
+    correctAnswers: [String], // For fill-in-blank questions (array of possible correct answers) - legacy
+    blanks: [{
+      id: String,
+      answers: [String]
+    }], // For enhanced fill-in-blank questions (multiple blanks with individual answers)
     order: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
