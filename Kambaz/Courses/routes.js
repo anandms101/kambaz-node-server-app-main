@@ -29,7 +29,7 @@ export default function CourseRoutes(app) {
     const newCourse = await dao.createCourse(course);
     
     // Auto-enroll the course creator
-    if (currentUser) {
+    if (currentUser && currentUser._id && newCourse && newCourse._id) {
       await enrollmentsDao.enrollUserInCourse(currentUser._id, newCourse._id);
     }
     
